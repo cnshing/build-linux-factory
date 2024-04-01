@@ -13,7 +13,7 @@ RUN apt-get update \
         jq \
         virtualenv \ 
         yq \
-        sudo \ # Internal implementation of linux-factory assumes sudo exists
+        sudo # Internal implementation of linux-factory assumes sudo exists \
     && pip3 install poetry --break-system-packages
 
 RUN virtualenv env
