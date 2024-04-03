@@ -1,5 +1,7 @@
 FROM debian:bookworm-slim
-
+# Implements the required dependencies from the following code:
+# https://github.com/clayrisser/linux-factory/blob/main/.gitlab-ci.yml
+# Internal implementation of linux-factory assumes sudo exists
 RUN apt-get update \
     && apt-get install  -y \
         imagemagick \ 
@@ -13,7 +15,5 @@ RUN apt-get update \
         jq \
         virtualenv \ 
         yq \
-        sudo # Internal implementation of linux-factory assumes sudo exists \
+        sudo \
     && pip3 install poetry --break-system-packages
-
-RUN virtualenv env
