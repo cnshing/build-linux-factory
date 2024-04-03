@@ -12,32 +12,30 @@ on:
         description: "Should the docker image be pushed to docker hub?"
         required: false
         default: 'false'
-    secrets:
-      DOCKERHUB_TOKEN:
-        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      if: ${{ inputs.push == 'true' }}
-      with:
-        username: cnshing
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Build and push
-      uses: docker/build-push-action@v5
-      with:
-          push: ${{ inputs.push == 'true' }}
-          tags: cnshing/build-linux-factory:${{ inputs.tag }}
+    steps:
+      # Code modified from https://github.com/docker/build-push-action
+      - name: Checkout
+        uses: actions/checkout@v4
+  
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        if: ${{ inputs.push == 'true' }}
+        with:
+          username: cnshing
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+            push: ${{ inputs.push == 'true' }}
+            tags: cnshing/build-linux-factory:${{ inputs.tag }}
