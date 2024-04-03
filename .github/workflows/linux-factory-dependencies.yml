@@ -1,5 +1,5 @@
 
-run-name: Build ${{ (inputs.push && "and push ") || '' }}linux-factory dependencies docker image ${{ inputs.tag }}
+run-name: Build ${{ (inputs.push && 'and push ') || '' }}linux-factory dependencies docker image ${{ inputs.tag }}
 
 on:
   workflow_dispatch:
