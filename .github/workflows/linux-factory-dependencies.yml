@@ -1,5 +1,5 @@
 
-run-name: Create and push docker image of linux factory's dependencies
+run-name: Build ${{ inputs.push && "and push " }}linux-factory dependencies docker image ${{ inputs.tag }}
 
 on:
   workflow_dispatch:
