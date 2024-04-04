@@ -1,0 +1,11 @@
+run-name: Test build-linux-factory v1 action on clayrisser's linux factory
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    steps:
+      - name: Dummy workflow
+        run: echo "This is a dummy workflow"
+      
