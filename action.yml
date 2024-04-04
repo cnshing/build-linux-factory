@@ -18,7 +18,11 @@ runs:
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
-      options: --privileged -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh -v ${{ github.workspace }}:/github_workspace -e GITHUB_WORKSPACE=/github_workspace
+      options: >
+        --privileged 
+        -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
+        -v ${{ github.workspace }}:/github_workspace 
+        -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
         /entrypoint.sh "${{ inputs.path }}"
