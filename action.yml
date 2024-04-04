@@ -7,30 +7,15 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    # Modified from https://github.com/addnab/docker-run-action
-  - name: Checkout 
-    uses: actions/checkout@v2 # Stick to v2 only, required to mount the Github Workspace to a volume 
-    with:
-      ref: 'v1'
 
   - name: Attemt to list github workspace
-    run: ls -R ${{github.workspace}}
-    shell: bash
-
-  - name: Attempt to list github workspace hard coded
-    run: ls -R /home/runner/work
-    shell: bash
-
-  - name: Attempt to list github workspace via $GITHUB_WORKSPACE
-    run: ls -R $GITHUB_WORKSPACE
+    run: ls -R ${{github.action_path}}
     shell: bash
 
   - uses: addnab/docker-run-action@v3
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
-      options: --privileged -v ${{ github.workspace }}:/work
+      options: --privileged -v ${{ github.action_path }}:/work
       run: |
-        echo "work"
-        ls -R /work
-        /entrypoint.sh ${{ inputs.factory-dir }}
+        /github_workspace/entrypoint.sh ${{ inputs.path }}
