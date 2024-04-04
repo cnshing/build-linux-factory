@@ -10,6 +10,8 @@ runs:
     # Modified from https://github.com/addnab/docker-run-action
   - name: Checkout 
     uses: actions/checkout@v2 # Stick to v2 only, required to mount the Github Workspace to a volume 
+    with:
+      ref: 'v1'
 
   - name: Attemt to list github workspace
     run: ls -R ${{github.workspace}}
