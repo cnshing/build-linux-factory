@@ -1,0 +1,25 @@
+run-name: Test build-linux-factory v1 action on clayrisser's linux factory
+
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - releases/v1
+
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'clayrisser/linux-factory'
+
+      - name: Build Linux Factory
+        uses: cnshing/build-linux-factory@v1
+        with:
+          path: /linux-factory
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: clayrisser-iso
+          path: /linux-factory/.build/lb/*.iso
+      
