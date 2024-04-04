@@ -18,8 +18,10 @@ runs:
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
+      # UID matching between host and container from https://stackoverflow.com/a/45640469
       options: >
-        --privileged 
+        --privileged
+        -u $( id -u $USER ):$( id -g $USER )
         -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
         -v ${{ github.workspace }}:/github_workspace 
         -e GITHUB_WORKSPACE=/github_workspace
