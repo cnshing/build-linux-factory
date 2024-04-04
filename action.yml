@@ -17,14 +17,10 @@ runs:
       image: cnshing/build-linux-factory:v1
       options: --privileged -v ${{ github.workspace }}:/work
       run: |
-        echo "."
-        ls .
         echo "work"
         ls /work
-        echo "/"
-        ls /
-        echo "$GITHUB_WORKSPACE <-"
-        ls $GITHUB_WORKSPACE
+        echo "/work/work/"
+        ls /work/work
         echo "Attempting to find entrypoint.sh..."
-        find -name / "entrypoint.sh"
+        find / -name "entrypoint.sh"
         /entrypoint.sh ${{ inputs.factory-dir }}
