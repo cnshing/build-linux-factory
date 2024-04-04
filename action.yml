@@ -18,9 +18,5 @@ runs:
       options: --privileged -v ${{ github.workspace }}:/work
       run: |
         echo "work"
-        ls /work
-        echo "/work/work/"
-        ls /work/work
-        echo "Attempting to find entrypoint.sh..."
-        find / -name "entrypoint.sh"
+        ls -R /work
         /entrypoint.sh ${{ inputs.factory-dir }}
