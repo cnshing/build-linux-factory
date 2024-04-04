@@ -8,11 +8,11 @@ runs:
   using: 'composite'
   steps:
 
-  - name: Debug $GITHUB_WORKSPACE and ${{ github.workspace }}
+  - name: Assign host UID and GIDs as variables
     shell: bash
     run: | 
-      echo $GITHUB_WORKSPACE
-      echo ${{ github.workspace }}
+      echo "UID=$( id -u $USER )" >> $GITHUB_ENV
+      echo "GID=$( id -g $USER )" >> $GITHUB_ENV
 
   - uses: addnab/docker-run-action@v3
     with:
@@ -21,7 +21,7 @@ runs:
       # UID matching between host and container from https://stackoverflow.com/a/45640469
       options: >
         --privileged
-        -u $( id -u $USER ):$( id -g $USER )
+        -u ${{ env.UID }}:${{ env.GID }}
         -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
         -v ${{ github.workspace }}:/github_workspace 
         -e GITHUB_WORKSPACE=/github_workspace
