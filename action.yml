@@ -12,6 +12,6 @@ runs:
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
-      options: --privileged -v ${{ github.action_path }}:/work
+      options: --privileged -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh
       run: |
-        /github_workspace/entrypoint.sh ${{ inputs.path }}
+        /entrypoint.sh ${{ inputs.path }}
