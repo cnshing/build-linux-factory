@@ -19,6 +19,10 @@ runs:
     run: ls -R /home/runner/work
     shell: bash
 
+  - name: Attempt to list github workspace via $GITHUB_WORKSPACE
+    run: ls -R $GITHUB_WORKSPACE
+    shell: bash
+
   - uses: addnab/docker-run-action@v3
     with:
       shell: bash
