@@ -8,6 +8,12 @@ runs:
   using: 'composite'
   steps:
 
+  - name: Debug $GITHUB_WORKSPACE and ${{ github.workspace }}
+    shell: bash
+    run: | 
+      echo $GITHUB_WORKSPACE
+      echo ${{ github.workspace }}
+
   - uses: addnab/docker-run-action@v3
     with:
       shell: bash
