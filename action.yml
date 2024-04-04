@@ -1,0 +1,12 @@
+name: 'build-linux-factory'
+description: 'Builds an image from a linux factory'
+inputs:
+  factory-dir:
+    description: 'Root directory of the linux factory'
+    required: true
+runs:
+  using: 'docker'
+  image: docker://cnshing:build-linux-factory
+  entrypoint: 'entrypoint.sh'
+  args:
+    - '${{ inputs.factory-dir }}'
