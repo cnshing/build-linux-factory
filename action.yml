@@ -2,7 +2,7 @@ name: 'build-linux-factory'
 description: 'Builds an image from a linux factory'
 inputs:
   path:
-    description: 'Root path of the linux factory'
+    description: 'Path of the linux factory'
     required: true
 runs:
   using: 'composite'
@@ -12,7 +12,7 @@ runs:
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
-      options: --privileged -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh
+      options: --privileged -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh -v ${{ github.workspace }}:/github_workspace -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
-        /entrypoint.sh ${{ inputs.path }}
+        /entrypoint.sh "${{ inputs.path }}"
