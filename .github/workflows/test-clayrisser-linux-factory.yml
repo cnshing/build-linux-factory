@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'clayrisser/linux-factory'
-          path: /linux-factory
+          path: linux-factory
 
       - name: Build Linux Factory
         uses: cnshing/build-linux-factory@v1
