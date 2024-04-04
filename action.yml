@@ -22,8 +22,8 @@ runs:
       options: >
         --privileged
         -u ${{ env.UID }}:${{ env.GID }}
-        -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
-        -v ${{ github.workspace }}:/github_workspace 
+        --mount type=bind,src=${{ github.action_path }}/entrypoint.sh,target=/entrypoint.sh
+        --mount type=bind,src=${{ github.workspace }},target=/github_workspace
         -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
