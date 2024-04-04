@@ -17,4 +17,7 @@ runs:
       image: cnshing/build-linux-factory:v1
       options: --privileged -v ${{ github.workspace }}:/work -e GITHUB_WORKSPACE=/work
       run: |
-        /work/entrypoint.sh ${{ inputs.factory-dir }}
+        ls .
+        ls /work
+        ls /
+        /entrypoint.sh ${{ inputs.factory-dir }}
