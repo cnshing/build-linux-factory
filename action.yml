@@ -11,6 +11,14 @@ runs:
   - name: Checkout 
     uses: actions/checkout@v3 # Required to mount the Github Workspace to a volume 
 
+  - name: Attemt to list github workspace
+    run: ls -R ${{github.workspace}}
+    shell: bash
+
+  - name: Attempt to list github workspace hard coded
+    run: ls -R /home/runner/work
+    shell: bash
+
   - uses: addnab/docker-run-action@v3
     with:
       shell: bash
