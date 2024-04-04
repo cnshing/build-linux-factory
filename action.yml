@@ -18,5 +18,9 @@ runs:
         -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
+        echo "List dirs before chmod"
+        ls -lR /github_workspace
         sudo chmod -R a+rwx /github_workspace
+        echo "After chmod"
+        ls -lR /github_workspace
         sudo -E /entrypoint.sh "${{ inputs.path }}"
