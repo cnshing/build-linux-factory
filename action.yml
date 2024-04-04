@@ -5,8 +5,15 @@ inputs:
     description: 'Root directory of the linux factory'
     required: true
 runs:
-  using: 'docker'
-  image: docker://cnshing:build-linux-factory
-  entrypoint: 'entrypoint.sh'
-  args:
-    - '${{ inputs.factory-dir }}'
+  using: 'composite'
+  # Modified from https://github.com/addnab/docker-run-action
+- name: Checkout 
+  uses: actions/checkout@v2 # Required to mount the Github Workspace to a volume 
+
+- uses: addnab/docker-run-action@v3
+  with:
+    shell: bash
+    image: cnshing/build-linux-factory:v1
+    options: --privileged -v ${{ github.workspace }}:/work -e GITHUB_WORKSPACE=/work
+    run: |
+      /work/entrypoint.sh ${{ inputs.factory-dir }}
