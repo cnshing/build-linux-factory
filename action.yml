@@ -19,4 +19,4 @@ runs:
       run: |
         chmod +x /entrypoint.sh
         chmod -R u=rwX,go=rX /github_workspace
-        /entrypoint.sh "${{ inputs.path }}"
+        sudo /entrypoint.sh "${{ inputs.path }}"
