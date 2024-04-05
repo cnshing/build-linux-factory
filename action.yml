@@ -7,11 +7,9 @@ inputs:
 runs:
   using: 'composite'
   steps:
-  
   - name: Run build-linux-factory docker image
     shell: bash
     env:
-        PYTHONUNBUFFERED: 1
         options: >
           --privileged
           -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
