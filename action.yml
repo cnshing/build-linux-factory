@@ -28,5 +28,5 @@ runs:
       docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options --entrypoint bash cnshing/build-linux-factory:v1 -c "${run//$'\n'/;}"
     continue-on-error: true
 
-  - name: Setup upterm session
-    uses: lhotari/action-upterm@v1
+  - name: Setup tmate session
+    uses: mxschmitt/action-tmate@v3
