@@ -18,11 +18,13 @@ runs:
           -v ${{ github.workspace }}:/github_workspace 
           -e GITHUB_WORKSPACE=/github_workspace
           -e PYTHONUNBUFFERED=1
+        run: |
+          chmod +x /entrypoint.sh
+          /entrypoint.sh ${{ inputs.path }}
     # Adapted from https://github.com/addnab/docker-run-action/pull/54/commits/73b9526fefc68201c32418e939f20b78046d578f
     run: |
       DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
       DOCKER_HOST="${DOCKER_HOST#unix://}"
-      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $OPTIONS --entrypoint=/entrypoint.sh cnshing/build-linux-factory:v1
-
+      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options cnshing/build-linux-factory:v1 --entrypoint=/bin/bash -c "${run//$'\n'/;}"
   - name: Setup upterm session
     uses: lhotari/action-upterm@v1
