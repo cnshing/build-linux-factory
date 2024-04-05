@@ -19,7 +19,7 @@ jobs:
         sudo apt install gh -y
 
     - name: Checkout build-linux-factory
-    - uses: actions/checkout@v4
+      uses: actions/checkout@v4
       with:
         path: build-linux-factory
         fetch-depth: 0
