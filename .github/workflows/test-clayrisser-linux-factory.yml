@@ -10,6 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v2
+        with:
+          remove-android: 'true'
+          remove-codeql: 'true'
+
       - uses: actions/checkout@v3
         with:
           repository: 'clayrisser/linux-factory'
