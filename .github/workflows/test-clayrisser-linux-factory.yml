@@ -15,8 +15,10 @@ jobs:
           repository: 'clayrisser/linux-factory'
           path: linux-factory
 
-      - name: Cleanup broken example overlays
-        run: rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
+      - name: Cleanup and check broken example overlays
+        run: | 
+          rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
+          ls $GITHUB_WORKSPACE/linux-factory/overlays
 
       - name: Build Linux Factory
         uses: cnshing/build-linux-factory@v1
