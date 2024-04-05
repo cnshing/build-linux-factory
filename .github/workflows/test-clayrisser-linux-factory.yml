@@ -14,6 +14,7 @@ jobs:
         with:
           repository: 'clayrisser/linux-factory'
           path: linux-factory
+          lfs: true
 
       - name: Cleanup and check broken example overlays
         run: | 
