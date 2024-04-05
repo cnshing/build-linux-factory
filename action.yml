@@ -1,19 +1,26 @@
 name: 'build-linux-factory'
 description: 'Builds an image from a linux factory'
 inputs:
-  factory-dir:
-    description: 'Root directory of the linux factory'
-    required: true
+  path:
+    description: 'Path of the linux factory relative to $GITHUB_WORKSPACE.'
+    required: false
 runs:
   using: 'composite'
-  # Modified from https://github.com/addnab/docker-run-action
-- name: Checkout 
-  uses: actions/checkout@v2 # Required to mount the Github Workspace to a volume 
-
-- uses: addnab/docker-run-action@v3
-  with:
+  steps:
+  - name: Run build-linux-factory docker image
     shell: bash
-    image: cnshing/build-linux-factory:v1
-    options: --privileged -v ${{ github.workspace }}:/work -e GITHUB_WORKSPACE=/work
+    env:
+        options: >
+          --privileged
+          -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
+          -v ${{ github.workspace }}:/github_workspace 
+          -e GITHUB_WORKSPACE=/github_workspace
+          -e PYTHONUNBUFFERED=1
+        run: |
+          chmod +x /entrypoint.sh
+          /entrypoint.sh ${{ inputs.path }}
+    # Adapted from https://github.com/addnab/docker-run-action/pull/54/commits/73b9526fefc68201c32418e939f20b78046d578f
     run: |
-      /work/entrypoint.sh ${{ inputs.factory-dir }}
+      DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
+      DOCKER_HOST="${DOCKER_HOST#unix://}"
+      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options --entrypoint bash cnshing/build-linux-factory:v1 -c "${run//$'\n'/;}"
