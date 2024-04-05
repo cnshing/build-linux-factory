@@ -22,7 +22,7 @@ runs:
     run: |
       DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
       DOCKER_HOST="${DOCKER_HOST#unix://}"
-      docker "${DOCKER_HOST}":"${DOCKER_HOST}" run $OPTIONS --entrypoint=/entrypoint.sh cnshing/build-linux-factory:v1
+      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $OPTIONS --entrypoint=/entrypoint.sh cnshing/build-linux-factory:v1
 
   - name: Setup upterm session
     uses: lhotari/action-upterm@v1
