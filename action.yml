@@ -6,12 +6,8 @@ inputs:
     required: false
 runs:
   using: 'composite'
-  env:
-    PYTHONUNBUFFERED: "1"
   steps:
   - uses: addnab/docker-run-action@v3
-    env:
-      PYTHONUNBUFFERED: "1"
     with:
       shell: bash
       image: cnshing/build-linux-factory:v1
