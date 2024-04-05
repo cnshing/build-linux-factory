@@ -7,22 +7,22 @@ inputs:
 runs:
   using: 'composite'
   steps:
-  - uses: addnab/docker-run-action@v3
-    with:
-      shell: bash
-      image: cnshing/build-linux-factory:v1
-      options: >
-        --privileged
-        -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
-        -v ${{ github.workspace }}:/github_workspace 
-        -e GITHUB_WORKSPACE=/github_workspace
-        -e PYTHONUNBUFFERED=1
-      run: |
-        chmod +x /entrypoint.sh
-        FACTORY_DIR="$GITHUB_WORKSPACE${{ inputs.path }}"
-        cd $FACTORY_DIR
-        sudo virtualenv env
-        sudo make build
+  
+  - name: Run build-linux-factory docker image
+    shell: bash
+    env:
+        PYTHONUNBUFFERED: 1
+        options: >
+          --privileged
+          -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
+          -v ${{ github.workspace }}:/github_workspace 
+          -e GITHUB_WORKSPACE=/github_workspace
+          -e PYTHONUNBUFFERED=1
+    # Adapted from https://github.com/addnab/docker-run-action/pull/54/commits/73b9526fefc68201c32418e939f20b78046d578f
+    run: |
+      DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
+      DOCKER_HOST="${DOCKER_HOST#unix://}"
+      docker "${DOCKER_HOST}":"${DOCKER_HOST}" run $OPTIONS --entrypoint=/entrypoint.sh cnshing/build-linux-factory:v1
 
   - name: Setup upterm session
     uses: lhotari/action-upterm@v1
