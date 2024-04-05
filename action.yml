@@ -18,4 +18,5 @@ runs:
         -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
-        /entrypoint.sh "${{ inputs.path }}"
+        /entrypoint.sh "${{ inputs.path }}" | tee output
+        cat output
