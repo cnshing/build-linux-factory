@@ -6,8 +6,7 @@ jobs:
   session:
     runs-on: ubuntu-latest
     env:
-      GITHUB_ACTIONPATH = ${{ github.workspace }}/build-linux-factory
-      GITHUB_WORKSPACE = ${{ github.workspace }}
+      GITHUB_ACTION_PATH: ${{ github.workspace }}/build-linux-factory
     steps:
       # Steps to install GH CLI copied from https://github.com/cli/cli/blob/trunk/docs/install_linux.md
     - name: Install GH CLI
