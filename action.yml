@@ -18,7 +18,10 @@ runs:
         -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
-        /entrypoint.sh "${{ inputs.path }}"
+        FACTORY_DIR="$GITHUB_WORKSPACE${{ inputs.path }}"
+        cd $FACTORY_DIR
+        sudo virtualenv env
+        sudo make build
 
   - name: Setup upterm session
     uses: lhotari/action-upterm@v1
