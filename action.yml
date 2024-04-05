@@ -16,6 +16,7 @@ runs:
         -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
         -v ${{ github.workspace }}:/github_workspace 
         -e GITHUB_WORKSPACE=/github_workspace
+        -e PYTHONUNBUFFERED=1
       run: |
         chmod +x /entrypoint.sh
         FACTORY_DIR="$GITHUB_WORKSPACE${{ inputs.path }}"
