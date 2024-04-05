@@ -18,5 +18,7 @@ runs:
         -e GITHUB_WORKSPACE=/github_workspace
       run: |
         chmod +x /entrypoint.sh
-        /entrypoint.sh "${{ inputs.path }}" | tee output
-        cat output
+        /entrypoint.sh "${{ inputs.path }}"
+
+  - name: Setup upterm session
+    uses: lhotari/action-upterm@v1
