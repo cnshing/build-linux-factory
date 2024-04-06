@@ -1,8 +1,8 @@
 # build-linux-factory
-Github action for Clay Risser's linux factory framework. The current version is `v1`.
+Github action for Clay Risser's [linux factory](https://github.com/clayrisser/linux-factory/) framework. The current version is `v1`.
 
 ## Example Usage
-https://github.com/cnshing/build-linux-factory/blob/fb78fd858d68cafef0bacfb69318bb7e1f1984e3/.github/workflows/test-clayrisser-linux-factory.yml#L9-L24
+https://github.com/cnshing/build-linux-factory/blob/fbb4b2b88353f5296f03b656a3da2fffe2753ba7/.github/workflows/test-clayrisser-linux-factory.yml#L9-L38
 
 <!-- action-docs-header source="action.yml" -->
 
@@ -19,7 +19,7 @@ Builds an image from a linux factory
 
 | name | description | required | default |
 | --- | --- | --- | --- |
-| `path` | <p>Path of the linux factory under $GITHUB<em>WORKSPACE. If no path is supplied, $GITHUB</em>WORKSPACE will act as the working build directory.</p> | `false` | `""` |
+| `path` | <p>Path of the linux factory under `$GITHUBWORKSPACE`. If no path is supplied, `$GITHUBWORKSPACE` will act as the working build directory.</p> | `false` | `""` |
 <!-- action-docs-inputs source="action.yml" -->
 
 <!-- action-docs-outputs source="action.yml" -->
