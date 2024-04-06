@@ -2,7 +2,7 @@ name: 'build-linux-factory'
 description: 'Builds an image from a linux factory'
 inputs:
   path:
-    description: 'Path of the linux factory relative to $GITHUB_WORKSPACE.'
+    description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
     required: false
 runs:
   using: 'composite'
