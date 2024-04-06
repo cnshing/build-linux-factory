@@ -1,5 +1,9 @@
 name: 'build-linux-factory'
 description: 'Builds an image from a linux factory'
+branding:
+  icon: 'monitor'
+  color: 'orange'
+
 inputs:
   path:
     description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
