@@ -2,7 +2,7 @@
 Github action for Clay Risser's [linux factory](https://github.com/clayrisser/linux-factory/) framework. The current version is `v1`.
 
 ## Example Usage
-https://github.com/cnshing/build-linux-factory/blob/fb78fd858d68cafef0bacfb69318bb7e1f1984e3/.github/workflows/test-clayrisser-linux-factory.yml#L9-L24
+https://github.com/cnshing/build-linux-factory/blob/fbb4b2b88353f5296f03b656a3da2fffe2753ba7/.github/workflows/test-clayrisser-linux-factory.yml#L9-L38
 
 <!-- action-docs-header source="action.yml" -->
 
