@@ -8,6 +8,11 @@ inputs:
   path:
     description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
     required: false
+  distribution-base:
+    description: "The debian distribution tag where the `build-linux-factory` docker dependencies are from. If no specific tag is supplied, this value will default to the latest distribution."
+    default: trixie
+    required: false
+
 runs:
   using: 'composite'
   steps:
@@ -27,4 +32,4 @@ runs:
     run: |
       DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
       DOCKER_HOST="${DOCKER_HOST#unix://}"
-      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options --entrypoint bash cnshing/build-linux-factory:v1 -c "${run//$'\n'/;}"
+      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options --entrypoint bash ghcr.io/cnshing/build-linux-factory:${{ inputs.distribution-base }}-slim -c "${run//$'\n'/;}"
