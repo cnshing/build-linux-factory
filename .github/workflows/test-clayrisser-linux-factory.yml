@@ -1,4 +1,4 @@
-run-name: Test build-linux-factory v1 action on clayrisser's linux factory
+run-name: Test build-linux-factory v2 action on clayrisser's linux factory
 
 on:
   workflow_dispatch:
@@ -28,7 +28,7 @@ jobs:
           ls $GITHUB_WORKSPACE/linux-factory/overlays
 
       - name: Build Linux Factory
-        uses: cnshing/build-linux-factory@v1
+        uses: cnshing/build-linux-factory@v2/refactor-republish-ghcr # TODO: Update to v2 once it is stable
         with:
           path: linux-factory
           distribution-base: bookworm # Current clayrisser project is based on bookworm
