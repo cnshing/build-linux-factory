@@ -32,7 +32,7 @@ jobs:
         with:
           path: linux-factory
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: clayrisser-iso
           path: ${{ github.workspace }}/linux-factory/.build/lb/*.iso
