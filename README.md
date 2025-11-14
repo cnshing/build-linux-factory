@@ -20,6 +20,7 @@ Builds an image from a linux factory
 | name | description | required | default |
 | --- | --- | --- | --- |
 | `path` | <p>Path of the linux factory under `$GITHUBWORKSPACE`. If no path is supplied, `$GITHUBWORKSPACE` will act as the working build directory.</p> | `false` | `""` |
+| `distribution-base` | <p>The debian distribution tag where the `build-linux-factory` docker dependencies are from. If no specific tag is supplied, this value will default to the latest distribution.</p> | `false` | `trixie` |
 <!-- action-docs-inputs source="action.yml" -->
 
 <!-- action-docs-outputs source="action.yml" -->
