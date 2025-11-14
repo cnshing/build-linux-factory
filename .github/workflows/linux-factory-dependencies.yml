@@ -10,7 +10,7 @@ on:
         required: false
         type: string
       push:
-        description: "Should the docker image be pushed to docker hub?"
+        description: "Should the docker image be pushed to ghcr.io?"
         type: boolean
         required: false
         default: false
