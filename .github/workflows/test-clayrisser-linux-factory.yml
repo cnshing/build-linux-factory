@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: 
-      - releases/v1
+      - releases/v2
 
 jobs:
   build:
@@ -31,6 +31,7 @@ jobs:
         uses: cnshing/build-linux-factory@v1
         with:
           path: linux-factory
+          distribution-base: bookworm # Current clayrisser project is based on bookworm
 
       - uses: actions/upload-artifact@v3
         with:
