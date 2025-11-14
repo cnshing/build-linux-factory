@@ -33,7 +33,7 @@ jobs:
           path: linux-factory
           distribution-base: bookworm # Current clayrisser project is based on bookworm
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: clayrisser-iso
           path: ${{ github.workspace }}/linux-factory/.build/lb/*.iso
