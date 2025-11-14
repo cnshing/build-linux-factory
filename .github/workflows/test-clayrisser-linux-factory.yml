@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     steps:
       - name: Dummy workflow
         run: echo "This is a dummy workflow"
