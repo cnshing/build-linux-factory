@@ -1,6 +1,6 @@
-ARG DISTRIBUTION
+ARG TAG
 
-FROM debian:${DISTRIBUTION}-slim
+FROM debian:${TAG}
 # Implements the required dependencies from the following code:
 # https://github.com/clayrisser/linux-factory/blob/main/.gitlab-ci.yml
 # Internal implementation of linux-factory assumes sudo exists
