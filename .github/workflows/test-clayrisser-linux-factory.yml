@@ -36,10 +36,8 @@ jobs:
         uses: jenseng/dynamic-uses@v1
         with:
           uses: cnshing/build-linux-factory@${{ inputs.branch }}
-          # Current clayrisser project is based on bookworm
           with: |
             path: linux-factory
-            distribution-base: bookworm 
   
       - uses: actions/upload-artifact@v4
         with:
