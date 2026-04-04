@@ -1,44 +1,44 @@
-name: 'build-linux-factory'
-description: 'Builds an image from a linux factory'
+name: "build-linux-factory"
+description: "Builds an image from a linux factory"
 branding:
-  icon: 'monitor'
-  color: 'orange'
+  icon: "monitor"
+  color: "orange"
 
 inputs:
   path:
     description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
     required: false
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-  - name: Install dependencies
-    shell: bash
-    run: |
-      sudo apt update
-      sudo apt-get install  -y \
-              imagemagick \ 
-              make \
-              git \
-              git-lfs \
-              grub-emu \ 
-              live-build \
-              python3 \ 
-              python3-pip \
-              jq \
-              virtualenv \ 
-              yq \
-              sudo 
-        
-  # Implements the build steps from the following code:
-  # https://github.com/clayrisser/linux-factory/blob/main/.gitlab-ci.yml
-  - name: Configure Virtual Env
-    working-directory: ./${{ inputs.path }}
-    shell: bash
-    run: |
-      pip3 install poetry --break-system-packages
-      sudo virtualenv env 
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+                imagemagick \
+                make \
+                git \
+                git-lfs \
+                grub-emu \
+                live-build \
+                python3 \
+                python3-pip \
+                jq \
+                virtualenv \
+                yq \
+                sudo
 
-  - name: Live Build
-    working-directory: ./${{ inputs.path }}
-    shell: bash
-    run: sudo make build
+    # Implements the build steps from the following code:
+    # https://github.com/clayrisser/linux-factory/blob/main/.gitlab-ci.yml
+    - name: Configure Virtual Env
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: |
+        pip3 install poetry --break-system-packages
+        sudo virtualenv env
+
+    - name: Live Build
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: sudo make build
