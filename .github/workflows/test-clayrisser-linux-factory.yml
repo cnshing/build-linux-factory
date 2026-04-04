@@ -1,4 +1,4 @@
-run-name: Test build-linux-factory v2 action on clayrisser's linux factory
+run-name: Test action ver. @${{ inputs.branch }} on clayrisser's linux factory
 
 on:
   workflow_dispatch:
