@@ -11,23 +11,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install dependencies
+    - name: Update dependencies
       shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-                imagemagick \
-                make \
-                git \
-                git-lfs \
-                grub-emu \
-                live-build \
-                python3 \
-                python3-pip \
-                jq \
-                virtualenv \
-                yq \
-                sudo
+      run: sudo apt-get update
+
+    - name: Install dependencies
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: imagemagick make git git-lfs grub-emu live-build python3 python3-pip jq virtualenv yq sudo
 
     # Implements the build steps from the following code:
     # https://github.com/clayrisser/linux-factory/blob/main/.gitlab-ci.yml
