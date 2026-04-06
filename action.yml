@@ -4,10 +4,6 @@ branding:
   icon: "monitor"
   color: "orange"
 
-inputs:
-  path:
-    description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
-    required: false
 runs:
   using: "composite"
   steps:
@@ -27,7 +23,6 @@ runs:
       run: echo "version=$(python3 -c 'import sys; print(sys.version.split()[0])')" >> "$GITHUB_OUTPUT"
 
     - name: Install Poetry
-      working-directory: ./${{ inputs.path }}
       uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
@@ -36,7 +31,6 @@ runs:
         installer-parallel: true
 
     - name: Load cached venv
-      working-directory: ./${{ inputs.path }}
       id: cached-poetry-dependencies
       uses: actions/cache@v4
       with:
@@ -44,15 +38,12 @@ runs:
         key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies
-      working-directory: ./${{ inputs.path }}
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
     - name: Install project
-      working-directory: ./${{ inputs.path }}
       run: poetry install --no-interaction
 
     - name: Live Build
-      working-directory: ./${{ inputs.path }}
       shell: bash
       run: sudo make build
