@@ -48,6 +48,11 @@ runs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
+    - name: Activate virtualenv # From https://stackoverflow.com/a/74669486
+      run: |
+        . .venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
+
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
