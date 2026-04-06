@@ -49,6 +49,8 @@ runs:
       run: poetry install --no-interaction --no-root
 
     - name: Activate virtualenv # From https://stackoverflow.com/a/74669486
+      working-directory: ./${{ inputs.path }}
+      shell: bash
       run: |
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
