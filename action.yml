@@ -48,11 +48,6 @@ runs:
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
-    - name: Install project
-      working-directory: ./${{ inputs.path }}
-      shell: bash
-      run: poetry install --no-interaction
-
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
