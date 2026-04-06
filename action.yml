@@ -39,19 +39,21 @@ runs:
       id: cached-poetry-dependencies
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}/${{ inputs.path }}/.venv
+        path: ./${{ inputs.path }}/.venv
         key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies
-      working-directory: ${{ github.workspace }}/${{ inputs.path }}
+      working-directory: ./${{ inputs.path }}
+      shell: bash
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
     - name: Install project
-      working-directory: ${{ github.workspace }}/${{ inputs.path }}
+      working-directory: ./${{ inputs.path }}
+      shell: bash
       run: poetry install --no-interaction
 
     - name: Live Build
-      working-directory: ${{ github.workspace }}/${{ inputs.path }}
+      working-directory: ./${{ inputs.path }}
       shell: bash
       run: sudo make build
