@@ -22,11 +22,12 @@ runs:
       run: |
         sudo apt-get install -y \
                 imagemagick
+                debian-archive-keyring
 
     - name: Install cacheable dependencies
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: debian-archive-keyring make git git-lfs grub-emu python3 python3-pip jq virtualenv yq sudo
+        packages: make git git-lfs grub-emu python3 python3-pip jq virtualenv yq sudo
         execute_install_scripts: true
 
     # Live-build from ubuntu repositories have different configuration CLI options.
