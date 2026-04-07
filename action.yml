@@ -33,9 +33,17 @@ runs:
     - name: Install live-build from Debian stable
       shell: bash
       run: |
-        echo "deb http://deb.debian.org/debian stable main" | sudo tee /etc/apt/sources.list.d/debian-stable.list
-        sudo apt-get update
-        sudo apt-get install -y -t stable live-build
+        url="$(
+          docker run --rm debian:stable bash -lc '
+            set -euo pipefail
+            apt-get update >/dev/null
+            apt-get install --reinstall --print-uris -qq live-build \
+              | awk -F"'"'"'" "/\/live-build_.*\.deb/ { print \$2; exit }"
+          '
+        )"
+        echo "Resolved URL: $url"
+        wget -O /tmp/live-build.deb "$url"
+        sudo dpkg -i /tmp/live-build.deb || sudo apt-get install -f -y
 
     # Setup Poetry from `https://github.com/snok/install-poetry?tab=readme-ov-file#testing`
     - name: Save Python version
