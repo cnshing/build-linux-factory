@@ -34,6 +34,8 @@ runs:
         virtualenvs-in-project: true
         virtualenvs-path: .venv
         installer-parallel: true
+        plugins: | # Required for Linux Factory
+          poetry-plugin-export
 
     - name: Load cached venv
       id: cached-poetry-dependencies
