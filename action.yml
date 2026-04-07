@@ -16,27 +16,17 @@ runs:
       shell: bash
       run: sudo apt-get update
 
-    - name: Install dependencies
+    - name: Install non-cacheable dependencies
       shell: bash
       run: |
-        sudo apt-get install -y \
-                imagemagick \
-                make \
-                git \
-                git-lfs \
-                grub-emu \
-                live-build \
-                python3 \
-                python3-pip \
-                jq \
-                virtualenv \
-                yq \
-                sudo
+        echo "sudo apt-get install -y \
+                imagemagick"
 
-    # - name: Install dependencies
-    #   uses: awalsh128/cache-apt-pkgs-action@latest
-    #   with:
-    #     packages: imagemagick make git git-lfs grub-emu live-build python3 python3-pip jq virtualenv yq sudo
+    - name: Install cacheable dependencies
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: imagemagick make git git-lfs grub-emu live-build python3 python3-pip jq virtualenv yq sudo
+        execute_install_scripts: true
 
     # Setup Poetry from `https://github.com/snok/install-poetry?tab=readme-ov-file#testing`
     - name: Save Python version
