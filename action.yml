@@ -16,11 +16,12 @@ runs:
       shell: bash
       run: sudo apt-get update
 
+    # These dependencies are not cacheable/error prone from caching
     - name: Install non-cacheable dependencies
       shell: bash
       run: |
-        echo "sudo apt-get install -y \
-                imagemagick"
+        sudo apt-get install -y \
+                imagemagick
 
     - name: Install cacheable dependencies
       uses: awalsh128/cache-apt-pkgs-action@latest
