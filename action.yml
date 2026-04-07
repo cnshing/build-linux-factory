@@ -58,4 +58,4 @@ runs:
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
-      run: sudo make build
+      run: sudo env "PATH=$PATH" make build
