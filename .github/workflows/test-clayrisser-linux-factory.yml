@@ -32,9 +32,13 @@ jobs:
           rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
           ls $GITHUB_WORKSPACE/linux-factory/overlays
 
-      - name: Link deprecated ImageMagick binary path # Newer hosts use `magick` instead of `convert`
+      - name: Shim old ImageMagick `convert` binary with `magick` # ClayRisser Linux Factory explicitly calls `convert`
         run: |
-          command -v convert >/dev/null 2>&1 || ln -s "$(command -v magick)" /usr/local/bin/convert
+          cat <<'EOF' > /usr/local/bin/convert
+          #!/bin/sh
+          exec /usr/local/bin/magick "$@"
+          EOF
+          chmod +x /usr/local/bin/convert
 
       - name: Build Linux Factory
         uses: jenseng/dynamic-uses@v1
