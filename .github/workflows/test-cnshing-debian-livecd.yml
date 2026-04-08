@@ -1,4 +1,4 @@
-run-name: Test action ver. @${{ inputs.branch }} on cnshing's debian live-cd minimium build
+run-name: Test action ver. @${{ inputs.branch }} on cnshing's debian live-cd basic build
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: 'cnshing/debian-livecd'
-          ref: 973b163d978130dd5417626b86790c0c09672563 # Minimium build commit
+          ref: v0.2.0 # Basic build tag
           path: debian-livecd
           lfs: true
 
