@@ -67,7 +67,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ./${{ inputs.path }}/.venv
-        key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles(format('{0}/poetry.lock', inputs.path)) }}
 
     - name: Install dependencies
       working-directory: ./${{ inputs.path }}
