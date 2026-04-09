@@ -34,7 +34,7 @@ This action is a `composite` action.
 
 ## BTS
 
-A Docker image is generated from [`Dockerfile`](Dockerfile) containing all the neccesary dependencies for linux-factory via [`linux-factory-dependencies.yml`](.github/workflows/linux-factory-dependencies.yml). The [`action.yml`](action.yml) then runs the docker container and attempts to build the image via [`entrypoint.sh`](entrypoint.sh).
+Any dependencies required for Linux Factory are installed via [`action.yml`](action.yml) and subsequently used to build the image. You may run this action on any runner VM, provided the Linux Factory [dependencies](https://github.com/clayrisser/linux-factory?tab=readme-ov-file#dependencies) and `debian-archive-keyring` are installable via APT. This action will also attempt to install [live-build](https://packages.debian.org/stable/live-build) from the current Debian stable repository for compatibility purposes.  
 
 Some of the workflow files are "dummy" files like [`test-clayrisser-linux-factory.yml`](.github/workflows/test-clayrisser-linux-factory.yml), where the source workflow code don't appear to do anything in the main/release branch but are instead located in a seperate testing branch.
 
