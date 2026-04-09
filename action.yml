@@ -1,30 +1,88 @@
-name: 'build-linux-factory'
-description: 'Builds an image from a linux factory'
+name: "build-linux-factory"
+description: "Builds an image from a linux factory"
 branding:
-  icon: 'monitor'
-  color: 'orange'
+  icon: "monitor"
+  color: "orange"
 
 inputs:
   path:
     description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
     required: false
+
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-  - name: Run build-linux-factory docker image
-    shell: bash
-    env:
-        options: >
-          --privileged
-          -v ${{ github.action_path }}/entrypoint.sh:/entrypoint.sh 
-          -v ${{ github.workspace }}:/github_workspace 
-          -e GITHUB_WORKSPACE=/github_workspace
-          -e PYTHONUNBUFFERED=1
-        run: |
-          chmod +x /entrypoint.sh
-          /entrypoint.sh ${{ inputs.path }}
-    # Adapted from https://github.com/addnab/docker-run-action/pull/54/commits/73b9526fefc68201c32418e939f20b78046d578f
-    run: |
-      DOCKER_HOST="${DOCKER_HOST:-unix:///var/run/docker.sock}"
-      DOCKER_HOST="${DOCKER_HOST#unix://}"
-      docker run -v "${DOCKER_HOST}":"${DOCKER_HOST}" $options --entrypoint bash cnshing/build-linux-factory:v1 -c "${run//$'\n'/;}"
+    - name: Update dependencies
+      shell: bash
+      run: sudo apt-get update
+
+    # These dependencies are not cacheable/error prone from caching
+    - name: Install non-cacheable dependencies
+      shell: bash
+      run: |
+        sudo apt-get install -y \
+                imagemagick \
+                debian-archive-keyring
+
+    - name: Install cacheable dependencies
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: make git git-lfs grub-emu python3 python3-pip jq virtualenv yq sudo
+        execute_install_scripts: true
+
+    # Live-build from ubuntu repositories have different configuration CLI options.
+    - name: Install live-build from Debian stable
+      shell: bash
+      run: |
+        url="$(
+          docker run --rm debian:stable bash -lc '
+            set -euo pipefail
+            apt-get update >/dev/null
+            apt-get install --reinstall --print-uris -qq live-build \
+              | awk -F"'"'"'" "/\/live-build_.*\.deb/ { print \$2; exit }"
+          '
+        )"
+        echo "Resolved URL: $url"
+        wget -O /tmp/live-build.deb "$url"
+        sudo dpkg -i /tmp/live-build.deb || sudo apt-get install -f -y
+
+    # Setup Poetry from `https://github.com/snok/install-poetry?tab=readme-ov-file#testing`
+    - name: Save Python version
+      id: python
+      shell: bash
+      run: echo "version=$(python3 -c 'import sys; print(sys.version.split()[0])')" >> "$GITHUB_OUTPUT"
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        virtualenvs-path: .venv
+        installer-parallel: true
+        plugins: | # Required for Linux Factory
+          poetry-plugin-export
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v4
+      with:
+        path: ./${{ inputs.path }}/.venv
+        key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles(format('{0}/poetry.lock', inputs.path)) }}
+
+    - name: Install dependencies
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root
+
+    - name: Activate virtualenv # From https://stackoverflow.com/a/74669486
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: |
+        . .venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
+
+    - name: Live Build
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: sudo env "PATH=$PATH" make build
