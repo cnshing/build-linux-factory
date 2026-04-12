@@ -2,9 +2,7 @@ run-name: Test build-linux-factory v1 action on clayrisser's linux factory
 
 on:
   workflow_dispatch:
-  push:
-    branches: 
-      - releases/v1
+  workflow_call: 
 
 jobs:
   build:
