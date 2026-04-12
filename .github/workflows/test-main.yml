@@ -1,4 +1,4 @@
-name: Run all Linux Factory tests for branch ${{ github.ref_name }}
+run-name: Run all Linux Factory tests for branch ${{ github.ref_name }}
 
 on:
   pull_request:
