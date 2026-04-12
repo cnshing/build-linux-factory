@@ -7,9 +7,13 @@ on:
         description: "Linux Factory target test branch"
         required: false
         default: "v2"
-  push:
-    branches: 
-      - releases/v2
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        description: "Linux Factory target test branch"
+        required: false
+        default: "v2"
 
 jobs:
   build:
