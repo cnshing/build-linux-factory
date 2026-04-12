@@ -7,10 +7,13 @@ on:
         description: "Linux Factory target test branch"
         required: false
         default: "v2"
-  push:
-    branches: 
-      - releases/v2
-
+  workflow_call: 
+    inputs:
+      branch:
+        description: "Linux Factory target test branch"
+        required: false
+        type: string
+        default: "v2"
 jobs:
   build:
     runs-on: ubuntu-24.04 # This version should be compatiable with Clayrisser Linux Factory
