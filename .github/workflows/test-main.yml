@@ -1,10 +1,6 @@
 run-name: Run all Linux Factory tests for branch ${{ github.ref_name }}
 
 on:
-  pull_request:
-    branches:
-      - releases/v1
-      - releases/v2
   push:
     branches:
       - v1/**
