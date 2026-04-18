@@ -1,0 +1,30 @@
+run-name: Run all Linux Factory tests for branch ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - v1/**
+      - v2/**
+
+jobs:
+  test-clayrisser-v1:
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/v1/')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'releases/v1')
+    uses: cnshing/build-linux-factory/.github/workflows/test-clayrisser-linux-factory.yml@test-releases/v1
+
+  test-clayrisser-v2:
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/v2/')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'releases/v2')
+    uses: cnshing/build-linux-factory/.github/workflows/test-clayrisser-linux-factory.yml@test-releases/v2
+    with:
+      branch: ${{ github.ref_name }}
+
+  test-cnshing-v2:
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/v2/')) ||
+      (github.event_name == 'pull_request' && github.base_ref == 'releases/v2')
+    uses: cnshing/build-linux-factory/.github/workflows/test-cnshing-debian-livecd.yml@test-releases/v2
+    with:
+      branch: ${{ github.ref_name }}
