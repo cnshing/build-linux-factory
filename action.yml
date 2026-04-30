@@ -8,6 +8,10 @@ inputs:
   path:
     description: "Path of the linux factory under $GITHUB_WORKSPACE. If no path is supplied, $GITHUB_WORKSPACE will act as the working build directory."
     required: false
+outputs:
+  iso:
+    description: "The full file path of the image build."
+    value: ${{ steps.iso-path.outputs.iso }}
 
 runs:
   using: "composite"
@@ -86,3 +90,11 @@ runs:
       working-directory: ./${{ inputs.path }}
       shell: bash
       run: sudo env "PATH=$PATH" make build
+
+    - name: Output ISO Path
+      id: iso-path
+      shell: bash
+      run: |
+        base="${{ inputs.path }}/.build/lb"
+        file=$(find "$(pwd)/$base" -type f -name "*.iso" | head -n 1)
+        echo "iso=$file" >> "$GITHUB_OUTPUT"
