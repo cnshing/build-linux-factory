@@ -37,6 +37,7 @@ jobs:
 
       - name: Build Linux Factory
         uses: jenseng/dynamic-uses@v1
+        id: linux-factory
         with:
           uses: cnshing/build-linux-factory@${{ inputs.branch }}
           with: |
@@ -45,5 +46,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: clayrisser-iso
-          path: ${{ github.workspace }}/linux-factory/.build/lb/*.iso
+          path: ${{ fromJSON(steps.linux-factory.outputs.outputs).iso }}
       
