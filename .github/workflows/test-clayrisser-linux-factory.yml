@@ -1,11 +1,11 @@
-run-name: Test build-linux-factory v1 action on clayrisser's linux factory
+run-name: Dummy test workflow for build-linux-factory
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     steps:
       - name: Dummy workflow
-        run: echo "This is a dummy workflow"
-      
+        run: echo "::warning If you are seeing this message, then this means you are running a test workflow outside the designated test branches.""
