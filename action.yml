@@ -91,6 +91,13 @@ runs:
       shell: bash
       run: sudo env "PATH=$PATH" make build
 
+    - name: Recursively list all directories # Temporary command to list all possible files
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: |
+        sudo apt-get install -y tree
+        tree
+
     - name: Output ISO Path
       id: iso-path
       shell: bash
