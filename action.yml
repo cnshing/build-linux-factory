@@ -92,7 +92,7 @@ runs:
       run: sudo env "PATH=$PATH" make build
 
     - name: Recursively list all directories # Temporary command to list all possible files
-      working-directory: ./${{ inputs.path }}
+      working-directory: .
       shell: bash
       run: |
         sudo apt-get install -y tree
