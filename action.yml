@@ -86,14 +86,10 @@ runs:
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
 
-    - name: Live Build
-      working-directory: ./${{ inputs.path }}
-      shell: bash
-      run: sudo env "PATH=$PATH" make build
-
-    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). 
-    - name: Load cached live-build packages
-      uses: actions/cache@v4
+    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs).
+    - name: Restore cached live-build packages
+      id: cache-lb-debs
+      uses: actions/cache/restore@v4
       with:
         path: |
           ${{ inputs.path }}/lb/cache/packages.bootstrap
@@ -107,17 +103,45 @@ runs:
     # content-blind (plain cp -a, no invalidation check), so no restore-keys
     # an exact-match miss just means a normal build, a fuzzy hit would silently
     # skip real work with stale content.
-    - name: Load cached bootstrap stage
-      uses: actions/cache@v4
+    - name: Restore cached bootstrap stage
+      id: cache-lb-bootstrap
+      uses: actions/cache/restore@v4
       with:
         path: ${{ inputs.path }}/lb/cache/bootstrap
         key: lb-bootstrap-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
 
-    - name: Load cached chroot stage
-      uses: actions/cache@v4
+    - name: Restore cached chroot stage
+      id: cache-lb-chroot
+      uses: actions/cache/restore@v4
       with:
         path: ${{ inputs.path }}/lb/cache/chroot
         key: lb-chroot-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
+
+    - name: Live Build
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: sudo env "PATH=$PATH" make build
+
+    - name: Save live-build packages cache
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ inputs.path }}/lb/cache/packages.bootstrap
+          ${{ inputs.path }}/lb/cache/packages.chroot
+          ${{ inputs.path }}/lb/cache/packages.binary
+        key: ${{ steps.cache-lb-debs.outputs.cache-primary-key }}
+
+    - name: Save bootstrap stage cache
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ inputs.path }}/lb/cache/bootstrap
+        key: ${{ steps.cache-lb-bootstrap.outputs.cache-primary-key }}
+
+    - name: Save chroot stage cache
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ inputs.path }}/lb/cache/chroot
+        key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
 
     - name: Recursively list all directories # Temporary command to list all possible files
       working-directory: .
