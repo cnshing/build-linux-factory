@@ -41,7 +41,7 @@ jobs:
           rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
           ls $GITHUB_WORKSPACE/linux-factory/overlays
 
-        # Note: Cache will automatically be deleted before we can save it due to src/deb.py
+        # Note: Cache will automatically be deleted before we can save it due to initialize_lb 
       - name: Force enable live-build cache
         run: |
           set -euo pipefail
