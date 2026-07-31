@@ -122,6 +122,10 @@ runs:
       shell: bash
       run: sudo env "PATH=$PATH" make build
 
+    - name: Enable execute and read for cache files # Allows unprivielged cache action to save files
+      shell: bash
+      run: sudo chmod -R a+rX ${{ inputs.path }}/.build/lb/cache
+
     - name: Save live-build packages cache
       uses: actions/cache/save@v4
       with:
