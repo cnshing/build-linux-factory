@@ -148,7 +148,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y tree
-        tree
+        tree -a
 
     - name: Output ISO Path
       id: iso-path
