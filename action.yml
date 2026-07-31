@@ -114,7 +114,7 @@ runs:
       id: cache-lb-chroot
       uses: actions/cache/restore@v4
       with:
-        path: ${{ inputs.path }}/lb/cache/chroot
+        path: ${{ inputs.path }}/.build/lb/cache/chroot
         key: lb-chroot-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
 
     - name: Live Build
@@ -126,21 +126,21 @@ runs:
       uses: actions/cache/save@v4
       with:
         path: |
-          ${{ inputs.path }}/lb/cache/packages.bootstrap
-          ${{ inputs.path }}/lb/cache/packages.chroot
-          ${{ inputs.path }}/lb/cache/packages.binary
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
         key: ${{ steps.cache-lb-debs.outputs.cache-primary-key }}
 
     - name: Save bootstrap stage cache
       uses: actions/cache/save@v4
       with:
-        path: ${{ inputs.path }}/lb/cache/bootstrap
+        path: ${{ inputs.path }}/.build/lb/cache/bootstrap
         key: ${{ steps.cache-lb-bootstrap.outputs.cache-primary-key }}
 
     - name: Save chroot stage cache
       uses: actions/cache/save@v4
       with:
-        path: ${{ inputs.path }}/lb/cache/chroot
+        path: ${{ inputs.path }}/.build/lb/cache/chroot
         key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
 
     - name: Recursively list all directories # Temporary command to list all possible files
