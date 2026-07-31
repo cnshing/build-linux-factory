@@ -41,11 +41,12 @@ jobs:
           rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
           ls $GITHUB_WORKSPACE/linux-factory/overlays
 
+        # Note: Cache will automatically be deleted before we can save it due to src/deb.py
       - name: Force enable live-build cache
         run: |
           set -euo pipefail
 
-          CONF="debian-livecd/lb/auto/config"
+          CONF="linux-factory/lb/auto/config"
 
           sudo sed -i \
             -e 's/--cache "\${CACHE:-true}"/--cache "true"/' \
