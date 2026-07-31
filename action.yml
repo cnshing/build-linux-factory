@@ -95,8 +95,12 @@ runs:
           ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
           ${{ inputs.path }}/.build/lb/cache/packages.chroot
           ${{ inputs.path }}/.build/lb/cache/packages.binary
-        key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/**', inputs.path)) }}
+        key: lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-${{ hashFiles('os/config.yaml') }}-${{ hashFiles('os/packages/**/*.yaml') }}
+
         restore-keys: |
+          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-${{ hashFiles('os/config.yaml') }}-
+          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-
+          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-
           lb-debs-${{ runner.os }}-
 
     # Allow caching of whole-directory chroot snapshots (LB_CACHE_STAGES). live-build's restore is
