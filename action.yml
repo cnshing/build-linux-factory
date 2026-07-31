@@ -86,7 +86,7 @@ runs:
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
 
-    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: specific overlay config -> main overlay config -> os/packages 
+    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: overlay packages -> main overlay config -> specific overlay configs -> os/packages 
     - name: Restore cached live-build packages
       id: cache-lb-debs
       uses: actions/cache/restore@v4
@@ -96,11 +96,11 @@ runs:
           ${{ inputs.path }}/.build/lb/cache/packages.chroot
           ${{ inputs.path }}/.build/lb/cache/packages.binary
 
-      key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path)) }}
+      key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path)) }}
 
       restore-keys: |
-        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-
-        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-
+        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-
+        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-
         lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-
         lb-debs-${{ runner.os }}-
 
