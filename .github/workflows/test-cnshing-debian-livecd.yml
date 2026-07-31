@@ -15,6 +15,10 @@ on:
         required: false
         default: "v2"
 
+env: 
+  LB_CACHE: "true" 
+  LB_CACHE_STAGES: "bootstrap chroot"
+
 jobs:
   build:
     runs-on: ubuntu-24.04 # This version should be compatiable with cnshing debian-livecd
@@ -26,6 +30,25 @@ jobs:
           ref: v0.2.0 # Basic build tag
           path: debian-livecd
           lfs: true
+
+      - name: Force live-build cache on for testing (defense in depth)
+        run: |
+          set -euo pipefail
+
+          CONF="debian-livecd/lb/auto/config"
+
+          sudo sed -i \
+            -e 's/--cache "\${CACHE:-true}"/--cache "true"/' \
+            -e '/--cache "true"/a\    --cache-stages "bootstrap chroot" \\' \
+            -e '/--cache-stages "bootstrap chroot"/a\    --cache-packages "true" \\' \
+            "$CONF"
+
+          sudo mkdir -p /etc/live
+          cat <<'EOF' | sudo tee /etc/live/build.conf > /dev/null
+          LB_CACHE="true"
+          LB_CACHE_STAGES="bootstrap chroot"
+          LB_CACHE_PACKAGES="true"
+          EOF
 
       - name: Build cnshing Minimum Debian Live-CD
         uses: jenseng/dynamic-uses@v1
