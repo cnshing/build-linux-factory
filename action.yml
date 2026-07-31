@@ -147,12 +147,12 @@ runs:
         path: ${{ inputs.path }}/.build/lb/cache/chroot
         key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
 
-    - name: Recursively list all directories # Temporary command to list all possible files
-      working-directory: .
-      shell: bash
-      run: |
-        sudo apt-get install -y tree
-        tree -a
+    # - name: Recursively list all directories # Temporary command to list all possible files
+    #   working-directory: .
+    #   shell: bash
+    #   run: |
+    #     sudo apt-get install -y tree
+    #     tree -a
 
     - name: Output ISO Path
       id: iso-path
