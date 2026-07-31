@@ -86,7 +86,7 @@ runs:
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
 
-    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs).
+    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: specific overlay config -> main overlay config -> os/packages 
     - name: Restore cached live-build packages
       id: cache-lb-debs
       uses: actions/cache/restore@v4
@@ -95,13 +95,14 @@ runs:
           ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
           ${{ inputs.path }}/.build/lb/cache/packages.chroot
           ${{ inputs.path }}/.build/lb/cache/packages.binary
-        key: lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-${{ hashFiles('os/config.yaml') }}-${{ hashFiles('os/packages/**/*.yaml') }}
 
-        restore-keys: |
-          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-${{ hashFiles('os/config.yaml') }}-
-          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-${{ hashFiles('overlays/*/config.yaml') }}-
-          lb-debs-${{ runner.os }}-${{ hashFiles('overlays/*/packages/**/*.yaml*') }}-
-          lb-debs-${{ runner.os }}-
+      key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path)) }}
+
+      restore-keys: |
+        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-
+        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-
+        lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-
+        lb-debs-${{ runner.os }}-
 
     # Allow caching of whole-directory chroot snapshots (LB_CACHE_STAGES). live-build's restore is
     # content-blind (plain cp -a, no invalidation check), so no restore-keys
