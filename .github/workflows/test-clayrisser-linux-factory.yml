@@ -41,7 +41,7 @@ jobs:
           rm -r $GITHUB_WORKSPACE/linux-factory/overlays/example
           ls $GITHUB_WORKSPACE/linux-factory/overlays
 
-      - name: Force live-build cache on for testing (defense in depth)
+      - name: Force enable live-build cache
         run: |
           set -euo pipefail
 

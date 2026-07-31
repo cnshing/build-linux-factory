@@ -15,9 +15,10 @@ on:
         required: false
         default: "v2"
 
-env: 
-  LB_CACHE: "true" 
+env:
+  LB_CACHE: "true"
   LB_CACHE_STAGES: "bootstrap chroot"
+  LB_CACHE_PACKAGES: "true"
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
           path: debian-livecd
           lfs: true
 
-      - name: Force live-build cache on for testing (defense in depth)
+      - name: Force enable live-build cache
         run: |
           set -euo pipefail
 
