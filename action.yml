@@ -92,9 +92,9 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: |
-          ${{ inputs.path }}/lb/cache/packages.bootstrap
-          ${{ inputs.path }}/lb/cache/packages.chroot
-          ${{ inputs.path }}/lb/cache/packages.binary
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
         key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/**', inputs.path)) }}
         restore-keys: |
           lb-debs-${{ runner.os }}-
@@ -107,7 +107,7 @@ runs:
       id: cache-lb-bootstrap
       uses: actions/cache/restore@v4
       with:
-        path: ${{ inputs.path }}/lb/cache/bootstrap
+        path: ${{ inputs.path }}/.build/lb/cache/bootstrap
         key: lb-bootstrap-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
 
     - name: Restore cached chroot stage
