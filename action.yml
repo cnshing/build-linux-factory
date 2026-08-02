@@ -104,32 +104,75 @@ runs:
           lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-
           lb-debs-${{ runner.os }}-
 
-    # Allow caching of whole-directory chroot snapshots (LB_CACHE_STAGES). live-build's restore is
-    # content-blind (plain cp -a, no invalidation check), so no restore-keys
-    # an exact-match miss just means a normal build, a fuzzy hit would silently
-    # skip real work with stale content.
-    - name: Restore cached bootstrap stage
+    # Cache bootstrap and chroot stages manually with priveleged tar so ownership, permissions, and device nodes work.
+    - name: Restore cached bootstrap stage archive
       id: cache-lb-bootstrap
       uses: actions/cache/restore@v4
       with:
-        path: ${{ inputs.path }}/.build/lb/cache/bootstrap
-        key: lb-bootstrap-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
+        path: ${{ runner.temp }}/lb-bootstrap.tar
+        key: lb-bootstrap-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
 
-    - name: Restore cached chroot stage
+    - name: Extract cached bootstrap stage
+      if: steps.cache-lb-bootstrap.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        target="${{ inputs.path }}/.build/lb/cache/bootstrap"
+        sudo rm -rf "$target"
+        sudo mkdir -p "$target"
+        sudo tar --extract --preserve-permissions --file "$RUNNER_TEMP/lb-bootstrap.tar" --directory "$target"
+
+    - name: Restore cached chroot stage archive
       id: cache-lb-chroot
       uses: actions/cache/restore@v4
       with:
-        path: ${{ inputs.path }}/.build/lb/cache/chroot
-        key: lb-chroot-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
+        path: ${{ runner.temp }}/lb-chroot.tar
+        key: lb-chroot-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
+
+    - name: Extract cached chroot stage
+      if: steps.cache-lb-chroot.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        target="${{ inputs.path }}/.build/lb/cache/chroot"
+        sudo rm -rf "$target"
+        sudo mkdir -p "$target"
+        sudo tar --extract --preserve-permissions --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$target"
 
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
       run: sudo env "PATH=$PATH" make build
 
-    - name: Enable execute and read for cache files # Allows unprivielged cache action to save files
+    - name: Enable execute and read for package cache files # Allows unprivileged cache action to save packages.* directly
       shell: bash
-      run: sudo chmod -R a+rX ${{ inputs.path }}/.build/lb/cache
+      run: |
+        sudo chmod -R a+rX \
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap \
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot \
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
+
+    - name: Archive bootstrap stage
+      if: success() && steps.cache-lb-bootstrap.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        source="${{ inputs.path }}/.build/lb/cache/bootstrap"
+        test -d "$source"
+        sudo tar --create --preserve-permissions --one-file-system \
+          --file "$RUNNER_TEMP/lb-bootstrap.tar" --directory "$source" .
+        sudo chmod a+r "$RUNNER_TEMP/lb-bootstrap.tar"
+
+    - name: Archive chroot stage
+      if: success() && steps.cache-lb-chroot.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        source="${{ inputs.path }}/.build/lb/cache/chroot"
+        test -d "$source"
+        sudo tar --create --preserve-permissions --one-file-system \
+          --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$source" .
+        sudo chmod a+r "$RUNNER_TEMP/lb-chroot.tar"
 
     - name: Save live-build packages cache
       uses: actions/cache/save@v4
@@ -141,15 +184,17 @@ runs:
         key: ${{ steps.cache-lb-debs.outputs.cache-primary-key }}
 
     - name: Save bootstrap stage cache
+      if: success() && steps.cache-lb-bootstrap.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
-        path: ${{ inputs.path }}/.build/lb/cache/bootstrap
+        path: ${{ runner.temp }}/lb-bootstrap.tar
         key: ${{ steps.cache-lb-bootstrap.outputs.cache-primary-key }}
 
     - name: Save chroot stage cache
+      if: success() && steps.cache-lb-chroot.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
-        path: ${{ inputs.path }}/.build/lb/cache/chroot
+        path: ${{ runner.temp }}/lb-chroot.tar
         key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
 
     # - name: Recursively list all directories # Temporary command to list all possible files
