@@ -86,10 +86,161 @@ runs:
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
 
+    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: overlay packages -> main overlay config -> specific overlay configs -> os/packages 
+    - name: Restore cached live-build packages
+      id: cache-lb-debs
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
+
+        key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path)) }}
+
+        restore-keys: |
+          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-
+          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-
+          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-
+          lb-debs-${{ runner.os }}-
+
+    # Cache bootstrap and chroot stages manually with priveleged tar so ownership, permissions, and device nodes work.
+    - name: Restore cached bootstrap stage archive
+      id: cache-lb-bootstrap
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ runner.temp }}/lb-bootstrap.tar
+        key: lb-bootstrap-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
+
+    - name: Extract cached bootstrap stage
+      if: steps.cache-lb-bootstrap.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        target="${{ inputs.path }}/.build/lb/cache/bootstrap"
+        sudo rm -rf "$target"
+        sudo mkdir -p "$target"
+        sudo tar --extract --preserve-permissions --file "$RUNNER_TEMP/lb-bootstrap.tar" --directory "$target"
+
+    - name: Restore cached chroot stage archive
+      id: cache-lb-chroot
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ runner.temp }}/lb-chroot.tar
+        key: lb-chroot-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
+
+    - name: Extract cached chroot stage
+      if: steps.cache-lb-chroot.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        target="${{ inputs.path }}/.build/lb/cache/chroot"
+        sudo rm -rf "$target"
+        sudo mkdir -p "$target"
+        sudo tar --extract --preserve-permissions --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$target"
+
+    - name: Verify package cache before build
+      if: runner.debug == '1'
+      shell: bash
+      run: |
+        echo "Before make build:"
+        for pkg in packages.bootstrap packages.chroot packages.binary; do
+          dir="${{ inputs.path }}/.build/lb/cache/$pkg"
+          echo "$pkg: $(find "$dir" -maxdepth 1 -type f -name '*.deb' 2>/dev/null | wc -l) debs"
+          du -sh "$dir" 2>/dev/null || true
+        done
+        ls ${{ inputs.path }}/.build/lb/.build/ 2>/dev/null | sort > "$RUNNER_TEMP/lb-stamps-before.txt" || true
+
+
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
       run: sudo env "PATH=$PATH" make build
+
+    - name: Verify package cache after build
+      working-directory: ./${{ inputs.path }}
+      if: always() && runner.debug == '1'
+      shell: bash
+      run: |
+        echo "After make build:"
+        for pkg in packages.bootstrap packages.chroot packages.binary; do
+          dir=".build/lb/cache/$pkg"
+          echo "$pkg: $(find "$dir" -maxdepth 1 -type f -name '*.deb' 2>/dev/null | wc -l) debs"
+          du -sh "$dir" 2>/dev/null || true
+        done
+
+        ls .build/lb/.build/ 2>/dev/null | sort > "$RUNNER_TEMP/lb-stamps-after.txt" || true
+        echo "Stamp diff (before vs after):"
+        diff -u "$RUNNER_TEMP/lb-stamps-before.txt" "$RUNNER_TEMP/lb-stamps-after.txt" || true
+
+        echo "Package consumption evidence from build.log:"
+        grep -E 'Need to get|Fetched' .build/lb/build.log 2>/dev/null || true
+        echo "Debootstrap retrieving count:"
+        grep -c '^I: Retrieving ' .build/lb/build.log 2>/dev/null || true
+
+    - name: Upload cache verification artifacts
+      if: always() && runner.debug == '1'
+      uses: actions/upload-artifact@v4
+      with:
+        name: lb-cache-verification
+        path: |
+          ${{ runner.temp }}/lb-stamps-before.txt
+          ${{ runner.temp }}/lb-stamps-after.txt
+          ${{ inputs.path }}/.build/lb/build.log
+        if-no-files-found: ignore
+
+    - name: Enable execute and read for package cache files # Allows unprivileged cache action to save packages.* directly
+      shell: bash
+      run: |
+        sudo chmod -R a+rX \
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap \
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot \
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
+
+    - name: Archive bootstrap stage
+      if: success() && steps.cache-lb-bootstrap.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        source="${{ inputs.path }}/.build/lb/cache/bootstrap"
+        test -d "$source"
+        sudo tar --create --preserve-permissions --one-file-system \
+          --file "$RUNNER_TEMP/lb-bootstrap.tar" --directory "$source" .
+        sudo chmod a+r "$RUNNER_TEMP/lb-bootstrap.tar"
+
+    - name: Archive chroot stage
+      if: success() && steps.cache-lb-chroot.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        source="${{ inputs.path }}/.build/lb/cache/chroot"
+        test -d "$source"
+        sudo tar --create --preserve-permissions --one-file-system \
+          --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$source" .
+        sudo chmod a+r "$RUNNER_TEMP/lb-chroot.tar"
+
+    - name: Save live-build packages cache
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap
+          ${{ inputs.path }}/.build/lb/cache/packages.chroot
+          ${{ inputs.path }}/.build/lb/cache/packages.binary
+        key: ${{ steps.cache-lb-debs.outputs.cache-primary-key }}
+
+    - name: Save bootstrap stage cache
+      if: success() && steps.cache-lb-bootstrap.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ runner.temp }}/lb-bootstrap.tar
+        key: ${{ steps.cache-lb-bootstrap.outputs.cache-primary-key }}
+
+    - name: Save chroot stage cache
+      if: success() && steps.cache-lb-chroot.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ runner.temp }}/lb-chroot.tar
+        key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
 
     - name: Output ISO Path
       id: iso-path
