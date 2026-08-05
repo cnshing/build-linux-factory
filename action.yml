@@ -139,10 +139,8 @@ runs:
         sudo mkdir -p "$target"
         sudo tar --extract --preserve-permissions --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$target"
 
-    # Layer 1 (survived): before/after .deb counts+sizes per cache dir.
-    # Layer 2 (recognized): before/after live-build stamp listing, diffed.
-    # Layer 3 (consumed): apt's own "Need to get"/"Fetched" bytes from build.log.
     - name: Verify package cache before build
+      if: runner.debug == '1'
       shell: bash
       run: |
         echo "Before make build:"
@@ -153,6 +151,7 @@ runs:
         done
         ls ${{ inputs.path }}/.build/lb/.build/ 2>/dev/null | sort > "$RUNNER_TEMP/lb-stamps-before.txt" || true
 
+
     - name: Live Build
       working-directory: ./${{ inputs.path }}
       shell: bash
@@ -160,7 +159,7 @@ runs:
 
     - name: Verify package cache after build
       working-directory: ./${{ inputs.path }}
-      if: always()
+      if: always() && runner.debug == '1'
       shell: bash
       run: |
         echo "After make build:"
@@ -180,7 +179,7 @@ runs:
         grep -c '^I: Retrieving ' .build/lb/build.log 2>/dev/null || true
 
     - name: Upload cache verification artifacts
-      if: always()
+      if: always() && runner.debug == '1'
       uses: actions/upload-artifact@v4
       with:
         name: lb-cache-verification
@@ -189,7 +188,6 @@ runs:
           ${{ runner.temp }}/lb-stamps-after.txt
           ${{ inputs.path }}/.build/lb/build.log
         if-no-files-found: ignore
-
 
     - name: Enable execute and read for package cache files # Allows unprivileged cache action to save packages.* directly
       shell: bash
@@ -243,13 +241,6 @@ runs:
       with:
         path: ${{ runner.temp }}/lb-chroot.tar
         key: ${{ steps.cache-lb-chroot.outputs.cache-primary-key }}
-
-    # - name: Recursively list all directories # Temporary command to list all possible files
-    #   working-directory: .
-    #   shell: bash
-    #   run: |
-    #     sudo apt-get install -y tree
-    #     tree -a
 
     - name: Output ISO Path
       id: iso-path
