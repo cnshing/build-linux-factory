@@ -192,10 +192,14 @@ runs:
     - name: Enable execute and read for package cache files # Allows unprivileged cache action to save packages.* directly
       shell: bash
       run: |
-        sudo chmod -R a+rX \
-          ${{ inputs.path }}/.build/lb/cache/packages.bootstrap \
-          ${{ inputs.path }}/.build/lb/cache/packages.chroot \
-          ${{ inputs.path }}/.build/lb/cache/packages.binary
+        for dir in packages.bootstrap packages.chroot packages.binary; do
+          path="${{ inputs.path }}/.build/lb/cache/$dir"
+          if [ -d "$path" ]; then
+            sudo chmod -R a+rX "$path"
+          else
+            echo "::warning::Skipping chmod, cache not present: $path"
+          fi
+        done
 
     - name: Archive bootstrap stage
       if: success() && steps.cache-lb-bootstrap.outputs.cache-hit != 'true'
@@ -203,7 +207,10 @@ runs:
       run: |
         set -euo pipefail
         source="${{ inputs.path }}/.build/lb/cache/bootstrap"
-        test -d "$source"
+        if [ ! -d "$source" ]; then
+          echo "::warning::Skipping bootstrap stage archive, not present: $source"
+          exit 0
+        fi
         sudo tar --create --preserve-permissions --one-file-system \
           --file "$RUNNER_TEMP/lb-bootstrap.tar" --directory "$source" .
         sudo chmod a+r "$RUNNER_TEMP/lb-bootstrap.tar"
@@ -214,7 +221,10 @@ runs:
       run: |
         set -euo pipefail
         source="${{ inputs.path }}/.build/lb/cache/chroot"
-        test -d "$source"
+        if [ ! -d "$source" ]; then
+          echo "::warning::Skipping chroot stage archive, not present: $source"
+          exit 0
+        fi
         sudo tar --create --preserve-permissions --one-file-system \
           --file "$RUNNER_TEMP/lb-chroot.tar" --directory "$source" .
         sudo chmod a+r "$RUNNER_TEMP/lb-chroot.tar"
