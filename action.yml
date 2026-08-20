@@ -72,7 +72,11 @@ runs:
       uses: actions/cache@v4
       with:
         path: ./${{ inputs.path }}/.venv
-        key: venv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles(format('{0}/poetry.lock', inputs.path)) }}
+        key: >-
+          ${{ format('venv-{0}-{1}-{2}',
+          runner.os,
+          steps.python.outputs.version,
+          hashFiles(format('{0}/poetry.lock', inputs.path))) }}
 
     - name: Install dependencies
       working-directory: ./${{ inputs.path }}
@@ -87,7 +91,31 @@ runs:
         . .venv/bin/activate
         echo PATH=$PATH >> $GITHUB_ENV
 
-    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: overlay packages -> main overlay config -> specific overlay configs -> os/packages 
+    - name: Prepare live-build configuration
+      working-directory: ./${{ inputs.path }}
+      shell: bash
+      run: python3 "${{ github.action_path }}/prepare_config.py"
+
+    - name: Calculate live-build toolchain fingerprint
+      id: lb-toolchain
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        live_build_version="$(dpkg-query -W -f='${Version}' live-build)"
+        debootstrap_version="$(dpkg-query -W -f='${Version}' debootstrap)"
+
+        hash="$(
+          printf '%s\n%s\n' \
+            "$live_build_version" \
+            "$debootstrap_version" \
+            | sha256sum \
+            | cut -d' ' -f1
+        )"
+
+        echo "hash=$hash" >> "$GITHUB_OUTPUT"
+
+    # Cache downloaded .deb files (bootstrap/chroot/binary apt runs). Caches by the following hierarchy: overlay packages -> main overlay config -> specific overlay configs -> os/packages
     - name: Restore cached live-build packages
       id: cache-lb-debs
       uses: actions/cache/restore@v4
@@ -97,13 +125,21 @@ runs:
           ${{ inputs.path }}/.build/lb/cache/packages.chroot
           ${{ inputs.path }}/.build/lb/cache/packages.binary
 
-        key: lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path)) }}
+        # Composite key, most to least specific: arch, overlay packages, main overlay config, specific overlay configs, os/packages.
+        key: >-
+          ${{ format('lb-debs-{0}-{1}-{2}-{3}-{4}',
+          runner.arch,
+          hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)),
+          hashFiles(format('{0}/os/config.yaml', inputs.path)),
+          hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)),
+          hashFiles(format('{0}/os/packages/**/*.yaml', inputs.path))) }}
 
+        # Same hierarchy as `key`, falling back one segment at a time.
         restore-keys: |
-          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-${{ hashFiles(format('{0}/overlays/*/config.yaml', inputs.path)) }}-
-          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}-
-          lb-debs-${{ runner.os }}-${{ hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)) }}-
-          lb-debs-${{ runner.os }}-
+          ${{ format('lb-debs-{0}-{1}-{2}-{3}-', runner.arch, hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)), hashFiles(format('{0}/os/config.yaml', inputs.path)), hashFiles(format('{0}/overlays/*/config.yaml', inputs.path))) }}
+          ${{ format('lb-debs-{0}-{1}-{2}-', runner.arch, hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path)), hashFiles(format('{0}/os/config.yaml', inputs.path))) }}
+          ${{ format('lb-debs-{0}-{1}-', runner.arch, hashFiles(format('{0}/overlays/*/packages/**/*.yaml*', inputs.path))) }}
+          lb-debs-${{ runner.arch }}
 
     # Cache bootstrap and chroot stages manually with priveleged tar so ownership, permissions, and device nodes work.
     - name: Restore cached bootstrap stage archive
@@ -111,7 +147,13 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ runner.temp }}/lb-bootstrap.tar
-        key: lb-bootstrap-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path)) }}
+        key: >-
+          ${{ format('lb-bootstrap-v3-{0}-{1}-{2}',
+          runner.arch,
+          steps.lb-toolchain.outputs.hash,
+          hashFiles(
+          format('{0}/.build/lb/config/common*', inputs.path),
+          format('{0}/.build/lb/config/bootstrap*', inputs.path))) }}
 
     - name: Extract cached bootstrap stage
       if: steps.cache-lb-bootstrap.outputs.cache-hit == 'true'
@@ -128,7 +170,20 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ runner.temp }}/lb-chroot.tar
-        key: lb-chroot-v2-${{ runner.os }}-${{ hashFiles(format('{0}/os/config.yaml', inputs.path), format('{0}/overlays/**', inputs.path)) }}
+        key: >-
+          ${{ format('lb-chroot-v3-{0}-{1}-{2}',
+          runner.arch,
+          steps.lb-toolchain.outputs.hash,
+          hashFiles(
+          format('{0}/.build/lb/config/common*', inputs.path),
+          format('{0}/.build/lb/config/bootstrap*', inputs.path),
+          format('{0}/.build/lb/config/chroot*', inputs.path),
+          format('{0}/.build/lb/config/archives/**', inputs.path),
+          format('{0}/.build/lb/config/package-lists/**', inputs.path),
+          format('{0}/.build/lb/config/packages.chroot/**', inputs.path),
+          format('{0}/.build/lb/config/includes.chroot*/**', inputs.path),
+          format('{0}/.build/lb/config/hooks/**', inputs.path),
+          format('{0}/.build/lb/config/preseed/**', inputs.path))) }}
 
     - name: Extract cached chroot stage
       if: steps.cache-lb-chroot.outputs.cache-hit == 'true'
